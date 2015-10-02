@@ -35,12 +35,14 @@ Controls.ProgressBar {
        the primary color defined in \l Theme::primaryColor
      */
     property color color: Theme.primaryColor
+    property bool running: true
 
     /*!
        The thickness of the progress circle's stroke,
        3 dp by default
      */
     property real dashThickness: Units.dp(3)
+    signal animationCompleted()
 
     width: Units.dp(32)
     height: Units.dp(32)
@@ -95,13 +97,28 @@ Controls.ProgressBar {
 
                         canvas.requestPaint();
                     }
+                    onRunningChanged:
+                    {
+                        if(!control.running){
+                            var arcStartPoint = internal.arcStartPoint;
+                            var shortDash = internal.shortDash;
+                            if (arcStartPoint > shortDash)
+                                hideAnimation.duration = (1 - (arcStartPoint - shortDash) / (2 * Math.PI - 0.001 - shortDash)) * 800 + 800
+                            else
+                                hideAnimation.duration = (1 - internal.arcStartPoint / internal.shortDash) * 800
+                            print(Math.round(hideAnimation.duration));
+                            hideAnimation.start()
+                        }
+                    }
                 }
 
                 QtObject {
                     id: internal
 
                     property real arcEndPoint: 0
-                    onArcEndPointChanged: canvas.requestPaint();
+                    property real hideOffset: 0
+                    property real _arcStartPoint: control.running ? arcStartPoint : arcStartPoint + hideOffset
+                    on_ArcStartPointChanged: canvas.requestPaint();
 
                     property real arcStartPoint: 0
                     onArcStartPointChanged: canvas.requestPaint();
@@ -119,14 +136,25 @@ Controls.ProgressBar {
                     from: 0
                     to: 2 * Math.PI
                     loops: Animation.Infinite
-                    running: control.indeterminate && canvas.visible
+                    running: control.indeterminate && canvas.visible && control.running
                     easing.type: Easing.Linear
                     duration: 3000
+                    alwaysRunToEnd: control.indeterminate
+                }
+
+                NumberAnimation {
+                    id: hideAnimation
+                    target: internal
+                    property: "hideOffset"
+                    from: 0
+                    to: 2 * Math.PI - 0.001 - internal.shortDash
                 }
 
                 SequentialAnimation {
-                    running: control.indeterminate && canvas.visible
+                    running: control.indeterminate && canvas.visible && control.running
                     loops: Animation.Infinite
+                    alwaysRunToEnd: control.indeterminate
+                    onStopped: control.animationCompleted()
 
                     ParallelAnimation {
                         NumberAnimation {
@@ -181,7 +209,7 @@ Controls.ProgressBar {
                     ctx.rotate(control.indeterminate ? internal.rotate : currentProgress * (3 * Math.PI / 2));
 
                     ctx.arc(0, 0, Math.min(canvas.width, canvas.height) / 2 - ctx.lineWidth,
-                        control.indeterminate ? internal.arcStartPoint : 0,
+                        control.indeterminate ? internal._arcStartPoint : 0,
                         control.indeterminate ? internal.arcEndPoint : currentProgress * (2 * Math.PI),
                         false);
 

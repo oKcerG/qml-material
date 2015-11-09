@@ -71,12 +71,18 @@ Popover {
 
         onEntered: {
             if(text !== "" && !showing)
-                timer.start()    
+                timer.start()
         }
 
         onExited: {
             timer.stop()
 
+            if(showing)
+                close()
+        }
+
+        onCanceled: {
+            timer.stop()
             if(showing)
                 close()
         }

@@ -57,6 +57,9 @@ Item {
 
     readonly property rect inputRect: Qt.rect(spinBox.x, spinBox.y, spinBox.width, spinBox.height)
 
+    property bool lightTheme: true
+    readonly property ThemePalette themePalette: lightTheme ? Theme.light : Theme.dark
+
     signal itemSelected(int index)
 
     Ink {
@@ -97,6 +100,7 @@ Item {
                 text: (listView.currentItem) ? listView.currentItem.text : ""
                 style: "subheading"
                 elide: Text.ElideRight
+                color: lightTheme ? "dark" : "white"
             }
 
             Icon {
@@ -108,6 +112,7 @@ Item {
 
                 name: "navigation/arrow_drop_down"
                 size: Units.dp(24)
+                color: underline.color
             }
         }
 
@@ -160,13 +165,14 @@ Item {
         anchors.bottom: spinBox.top
         anchors.bottomMargin: Units.dp(8)
 
-        color: Theme.light.hintColor
+        //color: themePalette.hintColor
+        color: underline.color
     }
 
     Rectangle {
         id: underline
 
-        color: field.hasError ? field.errorColor : field.activeFocus ? field.accentColor : Theme.light.hintColor
+        color: field.hasError ? field.errorColor : menu.showing ? field.accentColor : themePalette.hintColor
 
         height: field.activeFocus ? Units.dp(2) : Units.dp(1)
 
@@ -198,7 +204,7 @@ Item {
 
         visible: hasHelperText
         font.pixelSize: Units.dp(12)
-        color: field.hasError ? field.errorColor : Qt.darker(Theme.light.hintColor)
+        color: field.hasError ? field.errorColor : Qt.darker(themePalette.hintColor)
 
         Behavior on color {
             ColorAnimation { duration: 200 }

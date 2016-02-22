@@ -37,6 +37,9 @@ Controls.TextField {
     property bool hasError: characterLimit && length > characterLimit
     property int characterLimit
     property bool showBorder: true
+    property bool lightTheme: true
+    readonly property ThemePalette themePalette: lightTheme ? Theme.light : Theme.dark
+    textColor: enabled ? themePalette.textColor : themePalette.hintColor
 
     style: MaterialStyle.TextFieldStyle {}
 }

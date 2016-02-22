@@ -26,7 +26,7 @@ TextFieldStyle {
 
     padding {
         left: 0
-        right: 0
+        right: control.clearable ? Units.dp(40) : 0
         top: 0
         bottom: 0
     }
@@ -40,7 +40,7 @@ TextFieldStyle {
     placeholderTextColor: "transparent"
     selectedTextColor: "white"
     selectionColor: control.hasOwnProperty("color") ? control.color : Theme.accentColor
-    textColor: Theme.light.textColor
+    textColor: control.themePalette.textColor
 
     background : Item {
         id: background
@@ -54,12 +54,13 @@ TextFieldStyle {
                 ? control.hasError : characterLimit && control.length > characterLimit
         property int characterLimit: control.hasOwnProperty("characterLimit") ? control.characterLimit : 0
         property bool showBorder: control.hasOwnProperty("showBorder") ? control.showBorder : true
+        property bool clearable: control.hasOwnProperty("clearable") ? control.clearable : false
 
         Rectangle {
             id: underline
             color: background.hasError ? background.errorColor
                                     : control.activeFocus ? background.color
-                                                          : Theme.light.hintColor
+                                                          : control.themePalette.hintColor
 
             height: control.activeFocus ? Units.dp(2) : Units.dp(1)
             visible: background.showBorder
@@ -79,6 +80,25 @@ TextFieldStyle {
             }
         }
 
+        IconButton {
+            id: clearButton
+            anchors {
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+            }
+            visible: background.clearable && control.text
+            iconName: "content/clear"
+            color: underline.color
+            onClicked: control.text = ""
+            Component.onCompleted: {
+                var item = parent;
+                while (item.parent !== control)
+                    item = item.parent;
+                item.z = 1;
+                print("clearble: " + background.clearable)
+            }
+        }
 
         Label {
             id: fieldPlaceholder
@@ -89,7 +109,7 @@ TextFieldStyle {
             anchors.margins: -Units.dp(12)
             color: background.hasError ? background.errorColor
                                   : control.activeFocus && control.text !== ""
-                                        ? background.color : Theme.light.hintColor
+                                        ? background.color : control.themePalette.hintColor
 
             states: [
                 State {
@@ -146,7 +166,7 @@ TextFieldStyle {
                 text: background.helperText
                 font.pixelSize: Units.dp(12)
                 color: background.hasError ? background.errorColor
-                                           : Qt.darker(Theme.light.hintColor)
+                                           : Qt.darker(control.themePalette.hintColor)
 
                 Behavior on color {
                     ColorAnimation { duration: 200 }
@@ -162,7 +182,7 @@ TextFieldStyle {
                 visible: background.characterLimit && background.showBorder
                 text: control.length + " / " + background.characterLimit
                 font.pixelSize: Units.dp(12)
-                color: background.hasError ? background.errorColor : Theme.light.hintColor
+                color: background.hasError ? background.errorColor : control.themePalette.hintColor
                 horizontalAlignment: Text.AlignLeft
 
                 Behavior on color {

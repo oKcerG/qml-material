@@ -110,7 +110,7 @@ Text {
 
     font.pixelSize: Units.dp(!Device.isMobile && fontInfo.size_desktop 
             ? fontInfo.size_desktop : fontInfo.size)
-    font.family: "Roboto"
+    font.family: Qt.platform.os === "ios" ? "SF UI DIsplay" : "Roboto"
     font.weight: {
         var weight = fontInfo.font
 
